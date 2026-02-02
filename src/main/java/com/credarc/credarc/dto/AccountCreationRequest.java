@@ -1,11 +1,28 @@
 package com.credarc.credarc.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 public class AccountCreationRequest {
 
-  private String name;
-  private String email;
-  private String mobile;
-  private String password;
+
+ @NotBlank(message = "Name cannot be empty.")
+ @Size(min = 2 , max = 30)
+ private String name;
+
+ @NotBlank(message = "Email cannot be empty.")
+ @Email(message = "Email must be valid.")
+ private String email;
+
+ @NotBlank(message = "Mobile number cannot be empty.")
+ @Pattern(regexp = "\\d{10}", message = "Mobile number must contain exactly 10 digits")
+ private String mobile;
+
+ @NotBlank(message = "Password cannot be empty.")
+ @Size(min = 8,message = "Password must be at least 8 characters")
+ private String password;
 
   /** Getters **/
 
@@ -21,39 +38,25 @@ public class AccountCreationRequest {
         return mobile;
     }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getPassword(){ return password; }
 
 
 
     /** Setters **/
 
     public void setName(String name) {
-        if(name == null || name.trim().isEmpty())     {
-            throw new IllegalArgumentException("Name cannot be empty.");
-        }
-        else this.name = name;
+        this.name = name == null ? null : name.trim();
     }
 
     public void setEmail(String email) {
-        if(email == null || email.trim().isEmpty() || !email.contains("@"))     {
-            throw new IllegalArgumentException("Email cannot be empty.");
-        }
-        else this.email = email;
+        this.email = email == null ? null : email.trim();
     }
 
     public void setPassword(String password) {
-        if(name == null || name.trim().isEmpty())     {
-            throw new IllegalArgumentException("Name cannot be empty.");
-        }
-        else this.password = password;
+        this.password = password == null ? null : password.trim();
     }
 
     public void setMobile(String mobile) {
-        if(name == null || name.trim().isEmpty())     {
-            throw new IllegalArgumentException("Name cannot be empty.");
-        }
-        else this.mobile = mobile;
+        this.mobile = mobile == null ? null : mobile.trim();
     }
 }
