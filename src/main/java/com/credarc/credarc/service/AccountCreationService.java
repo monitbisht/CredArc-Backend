@@ -11,7 +11,7 @@ public class AccountCreationService {
     private UUID customerId;
 
     public AccountCreationResponse processAccountDetails(AccountCreationRequest request) {
-        if(request.getName().trim()
+
 
         AccountCreationResponse response = new AccountCreationResponse();
         response.setConfirmationMessage("Account Created Successfully!!");
