@@ -13,7 +13,7 @@ public class AccountCreationRequest {
  private String name;
 
  @NotBlank(message = "Email cannot be empty.")
- @Email(message = "Email must be valid  ")
+ @Email(message = "Email must be valid")
  private String email;
 
  @NotBlank(message = "Mobile number cannot be empty.")
