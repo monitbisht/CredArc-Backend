@@ -20,6 +20,6 @@ public class AccountCreationController {
 
     @PostMapping("/new/account")
     public AccountCreationResponse createAccount(@Valid @RequestBody AccountCreationRequest request){
-        return accountCreationService.processAccountDetails(request);
+        return accountCreationService.createAccount(request);
     }
 }

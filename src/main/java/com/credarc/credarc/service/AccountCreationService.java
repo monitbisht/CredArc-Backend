@@ -38,9 +38,16 @@ public class AccountCreationService {
         account.setBalance(BigDecimal.ZERO);
 
         // Calling repo method to save account details
-        accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
 
-        response.setConfirmationMessage("Account Created Successfully!!" );
+        //Setting up response for client
+        response.setMessage("Account Created Successfully!!" );
+        response.setAccountId(savedAccount.getAccountId());
+        response.setCustomerId(savedAccount.getCustomerId());
+        response.setAccountNumber(savedAccount.getAccountNumber());
+        response.setStatus(savedAccount.getStatus());
+        response.setBalance(savedAccount.getBalance());
+        response.setCreatedAt(savedAccount.getCreatedAt());
         return response;
     }
 
