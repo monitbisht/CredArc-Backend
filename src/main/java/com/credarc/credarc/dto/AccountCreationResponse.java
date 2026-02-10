@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class AccountCreationResponse {
-    private String message;
     private UUID accountId;
     private UUID customerId;
     private String accountNumber;
@@ -17,10 +16,6 @@ public class AccountCreationResponse {
 
 
     /** Getters **/
-
-    public String getMessage() {
-        return message;
-    }
 
     public UUID getAccountId() {
         return accountId;
@@ -47,10 +42,6 @@ public class AccountCreationResponse {
     }
 
     /** Setters **/
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public void setAccountId(UUID accountId) {
         this.accountId = accountId;

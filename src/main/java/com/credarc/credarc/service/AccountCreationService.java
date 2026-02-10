@@ -4,6 +4,7 @@ import com.credarc.credarc.dto.AccountCreationRequest;
 import com.credarc.credarc.dto.AccountCreationResponse;
 import com.credarc.credarc.entity.Account;
 import com.credarc.credarc.entity.AccountStatus;
+import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,6 @@ public class AccountCreationService {
         Account savedAccount = accountRepository.save(account);
 
         //Setting up response for client
-        response.setMessage("Account Created Successfully!!" );
         response.setAccountId(savedAccount.getAccountId());
         response.setCustomerId(savedAccount.getCustomerId());
         response.setAccountNumber(savedAccount.getAccountNumber());
@@ -52,6 +52,25 @@ public class AccountCreationService {
     }
 
 
+    public AccountCreationResponse getAccount(UUID id){
+
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException(id));
+
+
+       // Map Entity -> DTO
+        AccountCreationResponse getResponse = new AccountCreationResponse();
+
+        getResponse.setAccountId(account.getAccountId());
+        getResponse.setCustomerId(account.getCustomerId());
+        getResponse.setAccountNumber(account.getAccountNumber());
+        getResponse.setStatus(account.getStatus());
+        getResponse.setBalance(account.getBalance());
+        getResponse.setCreatedAt(account.getCreatedAt());
+
+        // 3. Return the Data
+        return getResponse;
+    }
 
     /** Helper methods **/
 
