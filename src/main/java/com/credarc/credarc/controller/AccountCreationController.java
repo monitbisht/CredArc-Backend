@@ -4,9 +4,9 @@ import com.credarc.credarc.dto.AccountCreationRequest;
 import com.credarc.credarc.dto.AccountCreationResponse;
 import com.credarc.credarc.service.AccountCreationService;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 public class AccountCreationController {
@@ -21,5 +21,10 @@ public class AccountCreationController {
     @PostMapping("/new/account")
     public AccountCreationResponse createAccount(@Valid @RequestBody AccountCreationRequest request){
         return accountCreationService.createAccount(request);
+    }
+
+    @GetMapping("/accounts/{id}")
+    public AccountCreationResponse getAccount(@PathVariable UUID id){
+        return accountCreationService.getAccount(id);
     }
 }
