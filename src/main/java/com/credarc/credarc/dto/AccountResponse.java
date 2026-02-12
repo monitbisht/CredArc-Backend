@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-public class AccountCreationResponse {
+public class AccountResponse {
     private UUID accountId;
-    private UUID customerId;
+    private UUID userId;
     private String accountNumber;
     private AccountStatus status ;
     private Instant createdAt ;
@@ -21,8 +21,8 @@ public class AccountCreationResponse {
         return accountId;
     }
 
-    public UUID getCustomerId() {
-        return customerId;
+    public UUID getUserId() {
+        return userId;
     }
 
     public String getAccountNumber() {
@@ -47,8 +47,8 @@ public class AccountCreationResponse {
         this.accountId = accountId;
     }
 
-    public void setCustomerId(UUID customerId) {
-        this.customerId = customerId;
+    public void setUserId(UUID userId) {
+        this.userId = userId;
     }
 
     public void setAccountNumber(String accountNumber) {

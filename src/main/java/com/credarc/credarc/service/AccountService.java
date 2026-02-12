@@ -1,9 +1,10 @@
 package com.credarc.credarc.service;
 
 import com.credarc.credarc.dto.AccountCreationRequest;
-import com.credarc.credarc.dto.AccountCreationResponse;
+import com.credarc.credarc.dto.AccountResponse;
 import com.credarc.credarc.entity.Account;
 import com.credarc.credarc.entity.AccountStatus;
+import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.repository.AccountRepository;
 import org.springframework.stereotype.Service;
@@ -14,26 +15,31 @@ import java.util.Random;
 import java.util.UUID;
 
 @Service
-public class AccountCreationService {
+public class AccountService {
 
     private final AccountRepository accountRepository; // Interface!
+    private final UserService userService;
 
-    public AccountCreationService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, UserService userService) {
         this.accountRepository = accountRepository;
+        this.userService = userService;
     }
 
 
-    public AccountCreationResponse createAccount(AccountCreationRequest request) {
+    public AccountResponse createAccount(AccountCreationRequest request) {
+
+        User user = userService.findOrCreateUser(request);
+
 
         // Account class's object
         Account account = new Account();
 
         // AccountCreationResponse class's object
-        AccountCreationResponse response = new AccountCreationResponse();
+        AccountResponse response = new AccountResponse();
 
         //Populating Account class fields
         account.setCreatedAt(Instant.now());
-        account.setCustomerId(UUID.randomUUID());
+        account.setUserId(user.getUserId());
         account.setAccountNumber(accNumberGeneration());
         account.setStatus(AccountStatus.ACTIVE);
         account.setBalance(BigDecimal.ZERO);
@@ -43,7 +49,7 @@ public class AccountCreationService {
 
         //Setting up response for client
         response.setAccountId(savedAccount.getAccountId());
-        response.setCustomerId(savedAccount.getCustomerId());
+        response.setUserId(savedAccount.getUserId());
         response.setAccountNumber(savedAccount.getAccountNumber());
         response.setStatus(savedAccount.getStatus());
         response.setBalance(savedAccount.getBalance());
@@ -52,23 +58,20 @@ public class AccountCreationService {
     }
 
 
-    public AccountCreationResponse getAccount(UUID id){
+    public AccountResponse getAccount(UUID id){
 
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException(id));
 
-
-       // Map Entity -> DTO
-        AccountCreationResponse getResponse = new AccountCreationResponse();
+        AccountResponse getResponse = new AccountResponse();
 
         getResponse.setAccountId(account.getAccountId());
-        getResponse.setCustomerId(account.getCustomerId());
+        getResponse.setUserId(account.getUserId());
         getResponse.setAccountNumber(account.getAccountNumber());
         getResponse.setStatus(account.getStatus());
         getResponse.setBalance(account.getBalance());
         getResponse.setCreatedAt(account.getCreatedAt());
 
-        // 3. Return the Data
         return getResponse;
     }
 
