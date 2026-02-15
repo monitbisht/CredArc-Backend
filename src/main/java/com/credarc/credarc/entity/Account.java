@@ -27,12 +27,13 @@ public class Account {
     private String accountNumber;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AccountStatus status = AccountStatus.ACTIVE;
 
     @Column(updatable = false , nullable = false)
     private Instant createdAt ;
 
-    @Column(nullable = false)
+    @Column(nullable = false , precision = 19 , scale = 2)
     private BigDecimal balance =  BigDecimal.ZERO;
 
     public User getUser() {
