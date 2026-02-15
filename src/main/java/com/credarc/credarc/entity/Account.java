@@ -1,35 +1,57 @@
 package com.credarc.credarc.entity;
 
 
+import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+@Entity
+@Table(name = "accounts")
 public class Account {
 
+    @Id
+    @GeneratedValue
+    @org.hibernate.annotations.UuidGenerator
+    @Column(nullable = false , updatable = false)
     private UUID accountId;
 
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
+    @Column(unique = true, nullable = false)
     private String accountNumber;
 
+    @Enumerated(EnumType.STRING)
     private AccountStatus status = AccountStatus.ACTIVE;
 
-    private Instant createdAt = Instant.now();
+    @Column(updatable = false , nullable = false)
+    private Instant createdAt ;
 
+    @Column(nullable = false)
     private BigDecimal balance =  BigDecimal.ZERO;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
     /* BigDecimal.ZERO points to one static object shared by everyone
     instead of creating new object on the heap every time an Account is created. */
 
 
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = Instant.now();
+    }
 
     /** Getters **/
 
     public UUID getAccountId() { return accountId; }
-
-    public UUID getUserId() {
-        return userId;
-    }
 
     public String getAccountNumber() {
         return accountNumber;
@@ -50,18 +72,12 @@ public class Account {
 
     public void setStatus(AccountStatus status) { this.status = status; }
 
-    public void setAccountId(UUID accountId) { this.accountId = accountId; }
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
     public void setAccountNumber(String accountNumber) {
         this.accountNumber = accountNumber;
     }
 
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
+
 }

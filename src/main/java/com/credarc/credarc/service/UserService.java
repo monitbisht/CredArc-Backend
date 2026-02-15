@@ -24,7 +24,6 @@ public class UserService {
                     newUser.setName(request.getName());
                     newUser.setEmail(request.getEmail());
                     newUser.setMobile(request.getMobile());
-                    newUser.setCreatedAt(Instant.now());
 
                    return userRepository.save(newUser);
 

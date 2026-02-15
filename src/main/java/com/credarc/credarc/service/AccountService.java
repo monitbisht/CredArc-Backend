@@ -7,17 +7,16 @@ import com.credarc.credarc.entity.AccountStatus;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.repository.AccountRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.Random;
 import java.util.UUID;
 
 @Service
 public class AccountService {
 
-    private final AccountRepository accountRepository; // Interface!
+    private final AccountRepository accountRepository;
     private final UserService userService;
 
     public AccountService(AccountRepository accountRepository, UserService userService) {
@@ -26,6 +25,7 @@ public class AccountService {
     }
 
 
+    @Transactional
     public AccountResponse createAccount(AccountCreationRequest request) {
 
         User user = userService.findOrCreateUser(request);
@@ -38,18 +38,18 @@ public class AccountService {
         AccountResponse response = new AccountResponse();
 
         //Populating Account class fields
-        account.setCreatedAt(Instant.now());
-        account.setUserId(user.getUserId());
+        account.setUser(user);
         account.setAccountNumber(accNumberGeneration());
         account.setStatus(AccountStatus.ACTIVE);
         account.setBalance(BigDecimal.ZERO);
+
 
         // Calling repo method to save account details
         Account savedAccount = accountRepository.save(account);
 
         //Setting up response for client
         response.setAccountId(savedAccount.getAccountId());
-        response.setUserId(savedAccount.getUserId());
+        response.setUserId(savedAccount.getUser().getUserId());
         response.setAccountNumber(savedAccount.getAccountNumber());
         response.setStatus(savedAccount.getStatus());
         response.setBalance(savedAccount.getBalance());
@@ -66,7 +66,7 @@ public class AccountService {
         AccountResponse getResponse = new AccountResponse();
 
         getResponse.setAccountId(account.getAccountId());
-        getResponse.setUserId(account.getUserId());
+        getResponse.setUserId(account.getUser().getUserId());
         getResponse.setAccountNumber(account.getAccountNumber());
         getResponse.setStatus(account.getStatus());
         getResponse.setBalance(account.getBalance());
