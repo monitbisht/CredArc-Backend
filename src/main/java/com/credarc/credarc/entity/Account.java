@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -43,6 +45,8 @@ public class Account {
     /* BigDecimal.ZERO points to one static object shared by everyone
     instead of creating new object on the heap every time an Account is created. */
 
+    @OneToMany(mappedBy = "account" , fetch = FetchType.LAZY)
+    private List<Transaction> transactions = new ArrayList<>();
 
     @PrePersist
     protected void onCreate(){
