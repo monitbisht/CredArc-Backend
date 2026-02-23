@@ -1,5 +1,6 @@
 package com.credarc.credarc.service;
 
+import com.credarc.credarc.dto.TransactionResponse;
 import com.credarc.credarc.entity.Account;
 import com.credarc.credarc.entity.Transaction;
 import com.credarc.credarc.entity.TransactionType;
@@ -25,13 +26,16 @@ public class TransactionService {
     }
 
     @Transactional
-    public void debit(UUID accountId, BigDecimal amount){
+    public TransactionResponse debit(UUID accountId, BigDecimal amount){
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Amount must be positive");
 
+
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
+
+        TransactionResponse transactionResponse = new TransactionResponse();
 
         BigDecimal bal = account.getBalance();
 
@@ -48,11 +52,20 @@ public class TransactionService {
         tx.setDescription("Debit operation");
 
 
-        transactionRepository.save(tx);
+        Transaction savedTransaction = transactionRepository.save(tx);
+
+        transactionResponse.setTransactionId(savedTransaction.getTransactionId());
+        transactionResponse.setFromAccountId(savedTransaction.getAccount().getAccountId());
+        transactionResponse.setAmount(savedTransaction.getAmount());
+        transactionResponse.setType(savedTransaction.getType());
+        transactionResponse.setTimestamp(savedTransaction.getCreatedAt());
+        transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
+
+        return transactionResponse;
     }
 
     @Transactional
-    public void credit(UUID accountId, BigDecimal amount){
+    public TransactionResponse credit(UUID accountId, BigDecimal amount){
 
         if(amount == null || amount.compareTo(BigDecimal.ZERO) <=0){
             throw new IllegalArgumentException("Amount must be positive.");
@@ -62,6 +75,9 @@ public class TransactionService {
                 .orElseThrow(()->
                     new AccountNotFoundException(accountId));
 
+        TransactionResponse transactionResponse = new TransactionResponse();
+
+
         account.setBalance(account.getBalance().add(amount));
 
         Transaction tx = new Transaction();
@@ -70,11 +86,20 @@ public class TransactionService {
         tx.setAmount(amount);
         tx.setDescription("Credit operation");
 
-        transactionRepository.save(tx);
+        Transaction savedTransaction = transactionRepository.save(tx);
+
+        transactionResponse.setTransactionId(savedTransaction.getTransactionId());
+        transactionResponse.setToAccountId(savedTransaction.getAccount().getAccountId());
+        transactionResponse.setAmount(savedTransaction.getAmount());
+        transactionResponse.setType(savedTransaction.getType());
+        transactionResponse.setTimestamp(savedTransaction.getCreatedAt());
+        transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
+
+        return transactionResponse;
     }
 
     @Transactional
-    public void transfer(UUID fromId,UUID toId , BigDecimal amount){
+    public TransactionResponse transfer(UUID fromId,UUID toId , BigDecimal amount){
 
         if (fromId.equals(toId)) {
             throw new IllegalArgumentException("Cannot transfer to same account.");
@@ -100,6 +125,9 @@ public class TransactionService {
         Account fromAccount = first.getAccountId().equals(fromId) ? first : second;
         Account toAccount = first.getAccountId().equals(fromId) ? second : first;
 
+        TransactionResponse transactionResponse = new TransactionResponse();
+
+
         if (fromAccount.getBalance().compareTo(amount) < 0){
             throw new InsufficientBalanceException();
         }
@@ -119,7 +147,16 @@ public class TransactionService {
         creditTx.setAmount(amount);
         creditTx.setDescription("Transfer from " + fromId);
 
-        transactionRepository.save(debitTx);
-        transactionRepository.save(creditTx);
+        Transaction savedTransaction = transactionRepository.save(debitTx);
+        Transaction secondSavedTransaction = transactionRepository.save(creditTx);
+        transactionResponse.setTransactionId(savedTransaction.getTransactionId());
+        transactionResponse.setFromAccountId(savedTransaction.getAccount().getAccountId());
+        transactionResponse.setToAccountId(secondSavedTransaction.getAccount().getAccountId());
+        transactionResponse.setAmount(savedTransaction.getAmount());
+        transactionResponse.setType(TransactionType.TRANSFER);
+        transactionResponse.setTimestamp(savedTransaction.getCreatedAt());
+        transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
+
+        return transactionResponse;
     }
 }
