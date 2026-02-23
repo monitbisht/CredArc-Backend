@@ -1,13 +1,9 @@
 package com.credarc.credarc.repository;
 
 import com.credarc.credarc.entity.Account;
-
-import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
-public interface AccountRepository {
+public interface AccountRepository extends JpaRepository<Account,UUID> {
 
-     Account save(Account account);
-
-     Optional<Account> findById(UUID id);
 }
