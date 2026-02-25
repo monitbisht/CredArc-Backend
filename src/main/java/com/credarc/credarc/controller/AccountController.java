@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-public class AccountCreationController {
+public class AccountController {
 
     private final AccountService accountService;
 
-    public AccountCreationController(AccountService accountService) {
+    public AccountController(AccountService accountService) {
         this.accountService = accountService;
     }
 
