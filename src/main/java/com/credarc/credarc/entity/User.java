@@ -26,6 +26,9 @@ public class User {
     @Column(unique = true)
     private String mobile;
 
+    @Column(nullable = false)
+    private String password;
+
     @Column(updatable = false , nullable = false)
     private Instant createdAt;
 
@@ -59,6 +62,9 @@ public class User {
         return createdAt;
     }
 
+    public String getPassword() {
+        return password;
+    }
 
     /** Setters **/
 
@@ -76,5 +82,9 @@ public class User {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
