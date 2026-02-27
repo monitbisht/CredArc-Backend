@@ -1,12 +1,11 @@
 package com.credarc.credarc.service;
 
 
-import com.credarc.credarc.dto.AccountCreationRequest;
+
+import com.credarc.credarc.dto.SignupRequest;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.repository.UserRepository;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Service
 public class UserService {
@@ -17,17 +16,23 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User findOrCreateUser(AccountCreationRequest request){
-        return userRepository.findByEmail(request.getEmail())
-                .orElseGet(()->{
-                    User newUser = new User();
-                    newUser.setName(request.getName());
-                    newUser.setEmail(request.getEmail());
-                    newUser.setMobile(request.getMobile());
 
-                   return userRepository.save(newUser);
-
-                });
+    public boolean isEmailRegistered(String email){
+        return userRepository.existsByEmail(email);
     }
 
+    public boolean isMobileRegistered(String mobile){
+        return userRepository.existsByMobile(mobile);
+    }
+
+
+    public User createUser(SignupRequest request , String hashedPassword){
+        User newUser = new User();
+        newUser.setName(request.getName());
+        newUser.setMobile(request.getMobile());
+        newUser.setEmail(request.getEmail());
+        newUser.setPassword(hashedPassword);
+
+        return userRepository.save(newUser);
+    }
 }
