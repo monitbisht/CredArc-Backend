@@ -19,14 +19,17 @@ public class TransactionService {
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final AccountService accountService;
 
-    public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository) {
+    public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, AccountService accountService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
+        this.accountService = accountService;
     }
 
     @Transactional
-    public TransactionResponse debit(UUID accountId, BigDecimal amount){
+    public TransactionResponse debit(UUID accountId, BigDecimal amount, UUID requestingUserId) {
+        accountService.verifyOwnership(accountId, requestingUserId);
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Amount must be positive");
@@ -99,8 +102,9 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponse transfer(UUID fromId,UUID toId , BigDecimal amount){
+    public TransactionResponse transfer(UUID fromId,UUID toId , BigDecimal amount , UUID requestingUserId) {
 
+        accountService.verifyOwnership(fromId, requestingUserId);
         if (fromId.equals(toId)) {
             throw new IllegalArgumentException("Cannot transfer to same account.");
         }

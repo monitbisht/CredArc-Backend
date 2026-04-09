@@ -8,6 +8,7 @@ import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.repository.AccountRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Random;
@@ -104,5 +105,13 @@ public class AccountService {
         return builder.toString();
     }
 
+    public void verifyOwnership(UUID accountId, UUID requestingUserId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
+
+        if (!account.getUser().getUserId().equals(requestingUserId)) {
+            throw new AccessDeniedException("You do not have access to this account.");
+        }
+    }
 }
 
