@@ -1,9 +1,9 @@
-package com.credarc.credarc.entity;
+    package com.credarc.credarc.entity;
 
 
-public enum AccountStatus {
-    ACTIVE,
-    INACTIVE,
-    CLOSED
-}
+    public enum AccountStatus {
+        ACTIVE,
+        INACTIVE,
+        CLOSED
+    }
 

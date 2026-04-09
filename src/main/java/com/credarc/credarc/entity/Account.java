@@ -47,8 +47,6 @@ public class Account {
     public void setUser(User user) {
         this.user = user;
     }
-    /* BigDecimal.ZERO points to one static object shared by everyone
-    instead of creating new object on the heap every time an Account is created. */
 
     @OneToMany(mappedBy = "account" , fetch = FetchType.LAZY)
     private List<Transaction> transactions = new ArrayList<>();

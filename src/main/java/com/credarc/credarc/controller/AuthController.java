@@ -1,5 +1,7 @@
 package com.credarc.credarc.controller;
 
+import com.credarc.credarc.dto.LoginRequest;
+import com.credarc.credarc.dto.LoginResponse;
 import com.credarc.credarc.dto.SignupRequest;
 import com.credarc.credarc.dto.SignupResponse;
 import com.credarc.credarc.service.AuthService;
@@ -24,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public void login(){
-        //TODO
+    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest){
+        return authService.login(loginRequest);
     }
 }

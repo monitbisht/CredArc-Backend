@@ -71,4 +71,13 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleCredentialsException(BadCredentialsException ex){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).
+                body(new ErrorResponse(
+                        "WRONG_CREDENTIALS",
+                        ex.getMessage()
+                ));
+    }
+
 }

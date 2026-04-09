@@ -5,7 +5,10 @@ package com.credarc.credarc.service;
 import com.credarc.credarc.dto.SignupRequest;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.repository.UserRepository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 @Service
 public class UserService {
@@ -32,7 +35,15 @@ public class UserService {
         newUser.setMobile(request.getMobile());
         newUser.setEmail(request.getEmail());
         newUser.setPassword(hashedPassword);
+        newUser.setCreatedAt(Instant.now());
 
         return userRepository.save(newUser);
+    }
+
+    public User getUser(String email){
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(()->
+                        new UsernameNotFoundException("User not found with email: " + email));
     }
 }

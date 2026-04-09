@@ -24,12 +24,24 @@ public class AccountService {
         this.userService = userService;
     }
 
+    public Account defaultAccount(User user) {
+
+        Account account = accountRepository.findByUser(user)
+                .orElseGet(()->createDefaultAccount(user));
+        return account;
+    }
+
+    private Account createDefaultAccount(User user) {
+        Account account = new Account();
+        account.setUser(user);
+        account.setAccountNumber(accNumberGeneration());
+        account.setStatus(AccountStatus.ACTIVE);
+        account.setBalance(BigDecimal.ZERO);
+        return accountRepository.save(account);
+    }
 
     @Transactional
     public AccountResponse createAccount(AccountCreationRequest request) {
-
-        User user = userService.findOrCreateUser(request);
-
 
         // Account class's object
         Account account = new Account();
@@ -38,7 +50,7 @@ public class AccountService {
         AccountResponse response = new AccountResponse();
 
         //Populating Account class fields
-        account.setUser(user);
+        /*account.setUser(user);*/
         account.setAccountNumber(accNumberGeneration());
         account.setStatus(AccountStatus.ACTIVE);
         account.setBalance(BigDecimal.ZERO);

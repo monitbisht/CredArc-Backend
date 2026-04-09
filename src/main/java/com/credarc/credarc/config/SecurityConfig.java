@@ -1,5 +1,6 @@
 package com.credarc.credarc.config;
 
+import com.credarc.credarc.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,28 +8,29 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disable CSRF (Cross-Site Request Forgery) because we will use JWTs, not cookies.
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // 2. Set session management to STATELESS. Spring will no longer remember sessions.
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // 3. Configure Endpoint access rules
                 .authorizeHttpRequests(auth -> auth
-                        // Allow anyone to access the auth endpoints (signup, login)
-                        .requestMatchers("/auth/**","/error").permitAll()
-
-                        // EVERY other request requires authentication
+                        .requestMatchers("/auth/**", "/error").permitAll()
                         .anyRequest().authenticated()
-                );
+                )
+                // Add JWT filter before Spring's default username/password filter
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
