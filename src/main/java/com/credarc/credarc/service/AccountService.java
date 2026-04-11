@@ -1,16 +1,19 @@
 package com.credarc.credarc.service;
 
-import com.credarc.credarc.dto.AccountCreationRequest;
 import com.credarc.credarc.dto.AccountResponse;
+import com.credarc.credarc.dto.AccountSummary;
 import com.credarc.credarc.entity.Account;
 import com.credarc.credarc.entity.AccountStatus;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.repository.AccountRepository;
+import com.credarc.credarc.security.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -26,10 +29,11 @@ public class AccountService {
     }
 
     public Account defaultAccount(User user) {
-
-        Account account = accountRepository.findByUser(user)
-                .orElseGet(()->createDefaultAccount(user));
-        return account;
+        List<Account> accounts = accountRepository.findAllByUser(user);
+        if (accounts.isEmpty()) {
+            return createDefaultAccount(user);
+        }
+        return accounts.get(0);
     }
 
     private Account createDefaultAccount(User user) {
@@ -42,50 +46,66 @@ public class AccountService {
     }
 
     @Transactional
-    public AccountResponse createAccount(AccountCreationRequest request) {
+    public AccountResponse createNewAccount(UUID userId) {
 
-        // Account class's object
-        Account account = new Account();
+        User user = userService.getUser(userId);
 
-        // AccountCreationResponse class's object
+        int accountCount = accountRepository.countByUser(user);
+        Account savedAccount;
+
+        if (accountCount >= 2) {
+            throw new IllegalStateException("Maximum limit of 2 accounts reached.");
+        }
+        else {
+            Account account = new Account();
+            account.setUser(user);
+            account.setAccountNumber(accNumberGeneration());
+            account.setStatus(AccountStatus.ACTIVE);
+            account.setBalance(BigDecimal.ZERO);
+            savedAccount = accountRepository.save(account);
+        }
+
         AccountResponse response = new AccountResponse();
 
-        //Populating Account class fields
-        /*account.setUser(user);*/
-        account.setAccountNumber(accNumberGeneration());
-        account.setStatus(AccountStatus.ACTIVE);
-        account.setBalance(BigDecimal.ZERO);
-
-
-        // Calling repo method to save account details
-        Account savedAccount = accountRepository.save(account);
-
-        //Setting up response for client
         response.setAccountId(savedAccount.getAccountId());
-        response.setUserId(savedAccount.getUser().getUserId());
         response.setAccountNumber(savedAccount.getAccountNumber());
-        response.setStatus(savedAccount.getStatus());
         response.setBalance(savedAccount.getBalance());
+        response.setStatus(AccountStatus.ACTIVE);
+        response.setUserId(userId);
         response.setCreatedAt(savedAccount.getCreatedAt());
         return response;
     }
 
 
-    public AccountResponse getAccount(UUID id){
+    public List<AccountResponse> getAllAccounts(UUID userId) {
+        User user = userService.getUser(userId);
+        List<Account> accounts = accountRepository.findAllByUser(user);
 
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new AccountNotFoundException(id));
+        return accounts.stream()
+                .sorted(Comparator.comparing(Account::getCreatedAt))
+                .map(account -> {
+            AccountResponse response = new AccountResponse();
+            response.setAccountId(account.getAccountId());
+            response.setUserId(userId);
+            response.setAccountNumber(account.getAccountNumber());
+            response.setStatus(account.getStatus());
+            response.setBalance(account.getBalance());
+            response.setCreatedAt(account.getCreatedAt());
+            return response;
+        }).toList();
+    }
 
-        AccountResponse getResponse = new AccountResponse();
-
-        getResponse.setAccountId(account.getAccountId());
-        getResponse.setUserId(account.getUser().getUserId());
-        getResponse.setAccountNumber(account.getAccountNumber());
-        getResponse.setStatus(account.getStatus());
-        getResponse.setBalance(account.getBalance());
-        getResponse.setCreatedAt(account.getCreatedAt());
-
-        return getResponse;
+    public List<AccountSummary> getAllAccountSummaries(User user) {
+        return accountRepository.findAllByUser(user)
+                .stream()
+                .sorted(Comparator.comparing(Account::getCreatedAt))
+                .map(acc -> {
+                    AccountSummary summary = new AccountSummary();
+                    summary.setAccountId(acc.getAccountId());
+                    summary.setAccountNumber(acc.getAccountNumber());
+                    summary.setBalance(acc.getBalance());
+                    return summary;
+                }).toList();
     }
 
     /** Helper methods **/

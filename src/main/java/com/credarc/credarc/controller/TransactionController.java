@@ -1,17 +1,13 @@
 package com.credarc.credarc.controller;
 
-import com.credarc.credarc.dto.CreditRequest;
-import com.credarc.credarc.dto.DebitRequest;
-import com.credarc.credarc.dto.TransactionResponse;
-import com.credarc.credarc.dto.TransferRequest;
+import com.credarc.credarc.dto.*;
 import com.credarc.credarc.security.CustomUserDetails;
 import com.credarc.credarc.service.TransactionService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -56,5 +52,14 @@ public class TransactionController {
                 transferRequest.getAmount(),
                 getRequestingUserId()
         );
+    }
+
+    @GetMapping("/{accountId}")
+    public Page<TransactionHistoryResponse> findAllByAccountId(@PathVariable UUID accountId,
+                                                               @RequestParam(defaultValue = "0") int page,
+                                                               @RequestParam(defaultValue = "10") int size) {
+
+        return transactionService.getTransactionHistory( accountId, page , size , getRequestingUserId() );
+
     }
 }

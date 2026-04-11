@@ -1,5 +1,6 @@
 package com.credarc.credarc.service;
 
+import com.credarc.credarc.dto.TransactionHistoryResponse;
 import com.credarc.credarc.dto.TransactionResponse;
 import com.credarc.credarc.entity.Account;
 import com.credarc.credarc.entity.Transaction;
@@ -8,6 +9,9 @@ import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.exception.InsufficientBalanceException;
 import com.credarc.credarc.repository.AccountRepository;
 import com.credarc.credarc.repository.TransactionRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -162,5 +166,23 @@ public class TransactionService {
         transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
 
         return transactionResponse;
+    }
+
+    public Page<TransactionHistoryResponse> getTransactionHistory(UUID accountId, int page, int size, UUID requestingUserId) {
+        accountService.verifyOwnership(accountId, requestingUserId);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Transaction> transactions = transactionRepository.findByAccount_AccountIdOrderByCreatedAtDesc(accountId, pageable);
+
+        return transactions.map(tx -> {
+            TransactionHistoryResponse transactionResponse = new TransactionHistoryResponse();
+           transactionResponse.setTransactionId(tx.getTransactionId());
+           transactionResponse.setAccountId(tx.getAccount().getAccountId());
+           transactionResponse.setType(tx.getType());
+           transactionResponse.setAmount(tx.getAmount());
+           transactionResponse.setDescription(tx.getDescription());
+           transactionResponse.setTimestamp(tx.getCreatedAt());
+            return transactionResponse;
+        });
     }
 }
