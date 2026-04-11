@@ -1,5 +1,6 @@
 package com.credarc.credarc.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 public class LoginResponse {
@@ -8,8 +9,7 @@ public class LoginResponse {
     private UUID userId;
     private String userName;
     private String email;
-    private UUID accountId;
-    private String accountNumber;
+    private List<AccountSummary> accounts;
     private String message;
 
 
@@ -31,16 +31,12 @@ public class LoginResponse {
         return email;
     }
 
-    public UUID getAccountId() {
-        return accountId;
-    }
-
-    public String getAccountNumber() {
-        return accountNumber;
-    }
-
     public String getMessage() {
         return message;
+    }
+
+    public List<AccountSummary> getAccounts() {
+        return accounts;
     }
 
     /** Setters **/
@@ -61,15 +57,11 @@ public class LoginResponse {
         this.email = email;
     }
 
-    public void setAccountId(UUID accountId) {
-        this.accountId = accountId;
-    }
-
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
-    }
-
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public void setAccounts(List<AccountSummary> accounts) {
+        this.accounts = accounts;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -45,5 +46,12 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(()->
                         new UsernameNotFoundException("User not found with email: " + email));
+    }
+
+    public User getUser(UUID userID){
+
+        return userRepository.findByUserId(userID)
+                .orElseThrow(()->
+                        new UsernameNotFoundException("User not found with id: " + userID));
     }
 }

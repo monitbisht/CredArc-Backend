@@ -1,9 +1,6 @@
 package com.credarc.credarc.service;
 
-import com.credarc.credarc.dto.LoginRequest;
-import com.credarc.credarc.dto.LoginResponse;
-import com.credarc.credarc.dto.SignupRequest;
-import com.credarc.credarc.dto.SignupResponse;
+import com.credarc.credarc.dto.*;
 import com.credarc.credarc.entity.Account;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.BadCredentialsException;
@@ -13,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -65,9 +63,9 @@ public class AuthService {
         LoginResponse response = new LoginResponse();
 
         response.setUserId(user.getUserId());
-        response.setAccountId(defaultAccount.getAccountId());
+        List<AccountSummary> accounts = accountService.getAllAccountSummaries(user);
+        response.setAccounts(accounts);
         response.setEmail(user.getEmail());
-        response.setAccountNumber(defaultAccount.getAccountNumber());
         response.setUserName(user.getName());
         response.setToken(jwtService.generateToken(user));
         response.setMessage("Login successful.");
