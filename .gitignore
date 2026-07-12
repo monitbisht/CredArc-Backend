@@ -1,23 +1,14 @@
-    # Compiled
-    target/
+target/
 
-    # IntelliJ IDEA
-    .idea/
-    *.iml
-    *.iws
-    *.ipr
+.idea/
+*.iml
+*.iws
+*.ipr
 
-    # OS
-    .DS_Store
-    Thumbs.db
+.DS_Store
+Thumbs.db
 
-    # Environment & secrets
-    .env
-    application-local.properties
+.env
 
-    # Logs
-    *.log
-    logs/
-
-    # Secrets
-    application.properties
+*.log
+logs/
