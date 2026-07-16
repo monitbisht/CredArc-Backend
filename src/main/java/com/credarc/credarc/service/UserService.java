@@ -41,14 +41,14 @@ public class UserService {
         return userRepository.save(newUser);
     }
 
-    public User getUser(String email){
+    public User getUserByEmail(String email){
 
         return userRepository.findByEmail(email)
                 .orElseThrow(()->
                         new UsernameNotFoundException("User not found with email: " + email));
     }
 
-    public User getUser(UUID userID){
+    public User getUserByUserId(UUID userID){
 
         return userRepository.findByUserId(userID)
                 .orElseThrow(()->

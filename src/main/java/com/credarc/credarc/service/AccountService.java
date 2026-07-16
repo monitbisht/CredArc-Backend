@@ -7,7 +7,6 @@ import com.credarc.credarc.entity.AccountStatus;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.repository.AccountRepository;
-import com.credarc.credarc.security.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -48,7 +47,7 @@ public class AccountService {
     @Transactional
     public AccountResponse createNewAccount(UUID userId) {
 
-        User user = userService.getUser(userId);
+        User user = userService.getUserByUserId(userId);
 
         int accountCount = accountRepository.countByUser(user);
         Account savedAccount;
@@ -78,7 +77,7 @@ public class AccountService {
 
 
     public List<AccountResponse> getAllAccounts(UUID userId) {
-        User user = userService.getUser(userId);
+        User user = userService.getUserByUserId(userId);
         List<Account> accounts = accountRepository.findAllByUser(user);
 
         return accounts.stream()

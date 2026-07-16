@@ -53,7 +53,7 @@ public class AuthService {
     @Transactional
     public LoginResponse login(LoginRequest request){
 
-        User user = userService.getUser(request.getEmail());
+        User user = userService.getUserByEmail(request.getEmail());
 
         if(! passwordService.matchPassword(request.getPassword(),user.getPassword())){
             throw new BadCredentialsException("Wrong email or password.");
