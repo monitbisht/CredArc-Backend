@@ -24,10 +24,7 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-
-    @Mock
     private User mockUser;
-    @Mock
     private SignupRequest signupRequest;
     @Mock
     private UserRepository userRepository;
@@ -48,24 +45,16 @@ class UserServiceTest {
     }
 
     @Test
-    void isEmailRegisteredTest() {
-        when(userRepository.existsByEmail("monit@gmail.com")).thenReturn(true);
-        assertTrue((userService.isEmailRegistered("monit@gmail.com")));
-    }
-
-    @Test
-    void isMobileRegisteredTest() {
-        when(userRepository.existsByMobile("9876543210")).thenReturn(true);
-        assertTrue((userService.isMobileRegistered("9876543210")));
-    }
-
-    @Test
     void createUserTest() {
-        when(userRepository.save(any(User.class))).thenReturn(mockUser);
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
         User res = userService.createUser(signupRequest,"y43e28d93");
         assertNotNull(res);
-        assertEquals("Monit",res.getName());
+        assertEquals(signupRequest.getName(),res.getName());
+        assertEquals(signupRequest.getMobile(),res.getMobile());
+        assertEquals(signupRequest.getEmail(),res.getEmail());
+        assertEquals("y43e28d93",res.getPassword());
+        assertNotNull(res.getCreatedAt());
     }
 
     @Test
@@ -74,7 +63,7 @@ class UserServiceTest {
 
         User res = userService.getUserByEmail(mockUser.getEmail());
         assertNotNull(res);
-        assertEquals("Monit",res.getName());
+        assertEquals(mockUser, res);
     }
 
     @Test
@@ -93,5 +82,38 @@ class UserServiceTest {
 
         assertNotNull(res);
         assertEquals("Monit",res.getName());
+    }
+
+    @Test
+    void getUserByUserId_throwsException_whenNotFound() {
+        UUID missingId = UUID.randomUUID();
+        when(userRepository.findByUserId(missingId)).thenReturn(Optional.empty());
+
+        assertThrows(UsernameNotFoundException.class,
+                () -> userService.getUserByUserId(missingId));
+    }
+
+    @Test
+    void isEmailRegisteredTest() {
+        when(userRepository.existsByEmail("monit@gmail.com")).thenReturn(true);
+        assertTrue((userService.isEmailRegistered("monit@gmail.com")));
+    }
+
+    @Test
+    void isMobileRegisteredTest() {
+        when(userRepository.existsByMobile("9876543210")).thenReturn(true);
+        assertTrue((userService.isMobileRegistered("9876543210")));
+    }
+
+    @Test
+    void isEmailRegistered_returnsFalse_whenNotRegistered(){
+        when(userRepository.existsByEmail("notfound@gmail.com")).thenReturn(false);
+        assertFalse(userService.isEmailRegistered("notfound@gmail.com"));
+    }
+
+    @Test
+    void isMobileRegistered_returnsFalse_whenNotRegistered() {
+        when(userRepository.existsByMobile("0000000000")).thenReturn(false);
+        assertFalse(userService.isMobileRegistered("0000000000"));
     }
 }
