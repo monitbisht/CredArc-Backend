@@ -4,7 +4,6 @@ package com.credarc.credarc.security;
 import com.credarc.credarc.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,8 +28,8 @@ public class JWTService {
                 .claims(extraClaims)
                 .subject(user.getUserId().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) //Access token is valid for 15 minutes.
+                .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
     }
 
