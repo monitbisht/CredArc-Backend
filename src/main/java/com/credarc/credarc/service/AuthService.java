@@ -19,12 +19,14 @@ public class AuthService {
     private final PasswordService passwordService;
     private final AccountService accountService;
     private final JWTService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(UserService userService, PasswordService passwordService, AccountService accountService, JWTService jwtService) {
+    public AuthService(UserService userService, PasswordService passwordService, AccountService accountService, JWTService jwtService, RefreshTokenService refreshTokenService) {
         this.userService = userService;
         this.passwordService = passwordService;
         this.accountService = accountService;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public SignupResponse register(SignupRequest request){
@@ -67,7 +69,8 @@ public class AuthService {
         response.setAccounts(accounts);
         response.setEmail(user.getEmail());
         response.setUserName(user.getName());
-        response.setToken(jwtService.generateToken(user));
+        response.setAccessToken(jwtService.generateAccessToken(user));
+        response.setRefreshToken(refreshTokenService.issueRefreshToken(user));
         response.setMessage("Login successful.");
 
         return response;

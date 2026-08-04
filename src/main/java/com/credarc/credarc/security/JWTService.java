@@ -20,9 +20,10 @@ public class JWTService {
     private  String SECRET_KEY ;
 
 
-    public String generateToken(User user){
+    public String generateAccessToken(User user){
         HashMap<String,Object> extraClaims =  new HashMap<>();
         extraClaims.put("email" , user.getEmail());
+        extraClaims.put("type" , "access");
 
         return Jwts.builder()
                 .claims(extraClaims)
@@ -33,11 +34,28 @@ public class JWTService {
                 .compact();
     }
 
+    public String generateRefreshToken(User user){
+        HashMap<String,Object> extraClaims =  new HashMap<>();
+        extraClaims.put("email" , user.getEmail());
+        extraClaims.put("type" , "refresh");
+
+        return Jwts.builder()
+                .claims(extraClaims)
+                .subject(user.getUserId().toString())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) //Refresh token is valid for 7 days.
+                .signWith(getSignInKey(), Jwts.SIG.HS256)
+                .compact();
+    }
+
     public boolean isTokenValid(String token, CustomUserDetails userDetails){
         final String tokenUserId = extractUserId(token);
         return tokenUserId.equals(userDetails.getUserId().toString())
                 && !isTokenExpired(token);
     }
+
+    public String extractTokenType(String token){return extractAllClaims(token).get("type",String.class);}
+
     public String extractEmail(String token) {
         return extractAllClaims(token).get("email", String.class);
     }

@@ -5,7 +5,8 @@ import java.util.UUID;
 
 public class LoginResponse {
 
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private UUID userId;
     private String userName;
     private String email;
@@ -15,8 +16,12 @@ public class LoginResponse {
 
     /** Getters **/
 
-    public String getToken() {
-        return token;
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
     public UUID getUserId() {
@@ -41,8 +46,12 @@ public class LoginResponse {
 
     /** Setters **/
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public void setUserId(UUID userId) {

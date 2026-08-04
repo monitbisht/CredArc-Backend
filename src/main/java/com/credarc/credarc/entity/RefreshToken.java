@@ -57,10 +57,6 @@ public class RefreshToken {
 
     /** Setters **/
 
-    public void setTokenId(UUID tokenId) {
-        this.tokenId = tokenId;
-    }
-
     public void setTokenHash(String tokenHash) {
         this.tokenHash = tokenHash;
     }
