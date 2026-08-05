@@ -6,6 +6,8 @@ import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.BadCredentialsException;
 import com.credarc.credarc.exception.DuplicateUserException;
 import com.credarc.credarc.security.JWTService;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,6 +90,13 @@ public class AuthService {
         TokenRefreshResponse response = new TokenRefreshResponse();
         response.setRefreshToken(newRefreshToken);
         response.setAccessToken(newAccessToken);
+        return response;
+    }
+
+    public LogoutResponse logout(LogoutRequest logoutRequest){
+        refreshTokenService.revokeToken(logoutRequest.getRefreshToken());
+        LogoutResponse response = new LogoutResponse();
+        response.setMessage("Logout Successful");
         return response;
     }
 

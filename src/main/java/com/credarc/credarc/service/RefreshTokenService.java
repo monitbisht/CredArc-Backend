@@ -81,6 +81,16 @@ public class RefreshTokenService {
 
     }
 
+    public void revokeToken(String refreshToken) {
+        String hashedToken = hashToken(refreshToken);
+
+        refreshTokenRepository.findByTokenHash(hashedToken)
+                .ifPresent(storedToken -> {
+                    storedToken.setRevoked(true);
+                    refreshTokenRepository.save(storedToken);
+                });
+    }
+
 
     /** Helper Methods **/
     private String hashToken(String token){
