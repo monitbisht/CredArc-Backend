@@ -8,7 +8,7 @@
 ![Docs](https://img.shields.io/badge/Docs-Swagger_UI-85EA2D?logo=swagger&logoColor=black)
 ![Build](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
 ![Containerized](https://img.shields.io/badge/Containerized-Docker-2496ED?logo=docker&logoColor=white)
-![Version](https://img.shields.io/badge/Version-1.3.0-blue)
+![Version](https://img.shields.io/badge/Version-2.0.0-blue)
 
 A backend-first banking system built with Java and Spring Boot, designed to simulate core financial operations with a focus on data integrity, atomic transactions, and production-grade security. Built as a portfolio project to demonstrate real-world API design, layered architecture, secure authentication patterns, and containerized deployment.
 
@@ -338,14 +338,14 @@ POST /transactions/transfer
 
 ## Roadmap
 
-### V2 : In Progress
+### V2 : Completed
 
 - [x] Docker + Docker Compose setup
 - [x] Persistent MySQL data via Docker volumes
 - [x] JUnit + Mockito test coverage across all service classes
 - [x] Short-lived access tokens (15 min) + refresh token rotation
 
-### V3 : Planned
+### V3 : In Progress
 
 - [ ] Redis caching for account balance reads
 - [ ] OAuth2 login (Google)
