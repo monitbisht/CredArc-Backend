@@ -8,7 +8,7 @@
 ![Docs](https://img.shields.io/badge/Docs-Swagger_UI-85EA2D?logo=swagger&logoColor=black)
 ![Build](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
 ![Containerized](https://img.shields.io/badge/Containerized-Docker-2496ED?logo=docker&logoColor=white)
-![Version](https://img.shields.io/badge/Version-1.2.0-blue)
+![Version](https://img.shields.io/badge/Version-1.3.0-blue)
 
 A backend-first banking system built with Java and Spring Boot, designed to simulate core financial operations with a focus on data integrity, atomic transactions, and production-grade security. Built as a portfolio project to demonstrate real-world API design, layered architecture, secure authentication patterns, and containerized deployment.
 
@@ -30,7 +30,8 @@ A backend-first banking system built with Java and Spring Boot, designed to simu
 
 ## Key Features
 
-- **JWT Authentication**: Stateless auth with BCrypt password hashing and 24hr token expiry
+- **JWT Authentication**: Stateless auth with BCrypt password hashing, 15-min access tokens, and 7-day refresh tokens with rotation
+- **Refresh Token Rotation & Replay Detection**: Refresh tokens are single-use, each refresh issues a new token and revokes the old one; reuse of an already-rotated token triggers automatic revocation of all active sessions for that user
 - **Default Account Provisioning**: Bank account automatically created on first login
 - **Multi-Account Support**: Users can hold up to 2 accounts
 - **Atomic Transfers**: Utilizes Spring's `@Transactional` boundary to ensure that peer-to-peer transfers either succeed completely or roll back entirely, guaranteeing data integrity
@@ -76,11 +77,11 @@ src/
 ├── config/          # SecurityConfig, OpenApiConfig
 ├── controller/      # AccountController, AuthController, TransactionController
 ├── dto/             # Request and Response DTOs
-├── entity/          # JPA Entities (User, Account, Transaction)
+├── entity/          # JPA Entities (User, Account, Transaction, RefreshToken)
 ├── exception/       # Custom exceptions + GlobalExceptionHandler
 ├── repository/      # Spring Data JPA Repositories
 ├── security/        # JwtAuthFilter, JWTService, CustomUserDetails, CustomAuthEntryPoint
-└── service/         # AccountService, AuthService, TransactionService, UserService
+└── service/         # AccountService, AuthService, RefreshTokenService, TransactionService, UserService
 ```
 
 **Containerized architecture:**
@@ -112,7 +113,9 @@ This lets you run against a native MySQL install for fast local iteration, or fu
 | Method | Endpoint       | Description                                   |
 | ------ | -------------- | ---------------------------------------------- |
 | POST   | `/auth/signup` | Register a new user                            |
-| POST   | `/auth/login`  | Login and receive JWT token + account details  |
+| POST   | `/auth/login`  | Login and receive access + refresh tokens plus account details |
+| POST   | `/auth/refresh` | Exchange a valid refresh token for a new access + refresh token pair |
+| POST   | `/auth/logout` | Revoke a refresh token, ending that session |
 
 ### Accounts : Requires JWT
 
@@ -160,6 +163,10 @@ All errors return a consistent JSON structure:
 | `CONCURRENT_MODIFICATION`   | 409    | Optimistic lock conflict — retry the request    |
 | `LIMIT_EXCEEDED`            | 400    | Maximum 2 accounts per user reached             |
 | `INVALID_REQUEST`           | 400    | Validation failure or bad input                 |
+| `TOKEN_EXPIRED`             | 401    | Refresh token has expired                        |
+| `TOKEN_NOT_FOUND`           | 401    | Refresh token not recognized                      |
+| `WRONG_TOKEN_TYPE`          | 401    | An access token was submitted where a refresh token was expected |
+| `TOKEN_REUSE_DETECTED`      | 401    | An already-used (rotated-out) refresh token was resubmitted — signals possible theft; all sessions for that user are revoked |
 | `INTERNAL_ERROR`            | 500    | Unexpected server error                          |
 
 ---
@@ -236,7 +243,7 @@ docker compose down -v
 3. Set environment variables:
 
    | Variable      | Description                          |
-      | ------------- | -------------------------------------- |
+         | ------------- | -------------------------------------- |
    | `DB_PASSWORD` | Your MySQL password                    |
    | `JWT_SECRET`  | Base64 encoded secret key              |
 
@@ -280,9 +287,33 @@ POST /auth/login
 }
 ```
 
-Returns a JWT token and your account details. Use the token in all subsequent requests.
+Returns an access token (15 min) and a refresh token (7 days), plus your account details. Use the access token in all subsequent requests.
 
-### 3. Authorize
+### 3. Refresh
+
+When your access token expires, exchange your refresh token for a new pair:
+
+```
+POST /auth/refresh
+{
+  "refreshToken": "your-refresh-token"
+}
+```
+
+Returns a new access token and refresh token. The old refresh token is invalidated — save the new one for the next refresh.
+
+### 4. Logout
+
+```
+POST /auth/logout
+{
+  "refreshToken": "your-refresh-token"
+}
+```
+
+Revokes the refresh token, ending that session.
+
+### 5. Authorize
 
 Add to request headers:
 
@@ -292,7 +323,7 @@ Authorization: Bearer <your_token>
 
 Or use the **Authorize** button in Swagger UI at `/swagger-ui/index.html`.
 
-### 4. Transfer
+### 6. Transfer
 
 ```
 POST /transactions/transfer
@@ -312,7 +343,7 @@ POST /transactions/transfer
 - [x] Docker + Docker Compose setup
 - [x] Persistent MySQL data via Docker volumes
 - [x] JUnit + Mockito test coverage across all service classes
-- [ ] Short-lived access tokens (15 min) + refresh token rotation
+- [x] Short-lived access tokens (15 min) + refresh token rotation
 
 ### V3 : Planned
 
