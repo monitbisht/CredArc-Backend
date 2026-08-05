@@ -33,6 +33,8 @@ class AuthServiceTest {
     private AccountService accountService;
     @Mock
     private JWTService jwtService;
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     private SignupRequest signupRequest;
     private LoginRequest loginRequest;
@@ -114,7 +116,6 @@ class AuthServiceTest {
                 () -> authService.login(loginRequest));
 
         verify(passwordService, never()).matchPassword(any(), any());
-
     }
 
     @Test
@@ -134,8 +135,7 @@ class AuthServiceTest {
         assertThrows(BadCredentialsException.class,
                 () -> authService.login(loginRequest));
 
-
-        verify(jwtService, never()).generateToken(any());
+        verify(jwtService, never()).generateAccessToken(any());
     }
 
     @Test
@@ -151,7 +151,8 @@ class AuthServiceTest {
 
         when(userService.getUserByEmail("email@gmail.com")).thenReturn(mockUser);
         when(passwordService.matchPassword("correctHashedPassword", "correctHashedPassword")).thenReturn(true);
-        when(jwtService.generateToken(any())).thenReturn("token");
+        when(jwtService.generateAccessToken(any())).thenReturn("accessToken123");
+        when(refreshTokenService.issueRefreshToken(any())).thenReturn("refreshToken123");
         List<AccountSummary> mockAccounts = List.of(new AccountSummary());
         when(accountService.getAllAccountSummaries(mockUser)).thenReturn(mockAccounts);
         when(accountService.defaultAccount(mockUser)).thenReturn(new Account());
@@ -161,9 +162,39 @@ class AuthServiceTest {
         assertNotNull(response);
         assertEquals(mockUser.getName(), response.getUserName());
         assertEquals(mockUser.getEmail(), response.getEmail());
-        assertEquals("token", response.getToken());
+        assertEquals("accessToken123", response.getAccessToken());
+        assertEquals("refreshToken123", response.getRefreshToken());
         assertEquals(mockAccounts, response.getAccounts());
         assertEquals("Login successful.", response.getMessage());
     }
 
+    @Test
+    void refresh_success(){
+        TokenRefreshRequest request = new TokenRefreshRequest();
+        request.setRefreshToken("oldRefreshToken");
+
+        TokenPair pair = new TokenPair();
+        pair.setAccessToken("newAccessToken");
+        pair.setRefreshToken("newRefreshToken");
+
+        when(refreshTokenService.rotateRefreshToken("oldRefreshToken")).thenReturn(pair);
+
+        TokenRefreshResponse response = authService.refresh(request);
+
+        assertNotNull(response);
+        assertEquals("newAccessToken", response.getAccessToken());
+        assertEquals("newRefreshToken", response.getRefreshToken());
+    }
+
+    @Test
+    void logout_success(){
+        LogoutRequest request = new LogoutRequest();
+        request.setRefreshToken("someRefreshToken");
+
+        LogoutResponse response = authService.logout(request);
+
+        assertNotNull(response);
+        assertEquals("Logout Successful", response.getMessage());
+        verify(refreshTokenService).revokeToken("someRefreshToken");
+    }
 }
