@@ -107,4 +107,34 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("LIMIT_EXCEEDED", ex.getMessage()));
     }
 
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidToken(InvalidTokenException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("INVALID_TOKEN", ex.getMessage()));
+    }
+
+    @ExceptionHandler(TokenReuseDetectedException.class)
+    public ResponseEntity<ErrorResponse> handleTokenReuse(TokenReuseDetectedException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("TOKEN_REUSE_DETECTED", ex.getMessage()));
+    }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleTokenExpired(TokenExpiredException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("TOKEN_EXPIRED", ex.getMessage()));
+    }
+
+    @ExceptionHandler(TokenNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleTokenNotFound(TokenNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("TOKEN_NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(WrongTokenTypeException.class)
+    public ResponseEntity<ErrorResponse> handleWrongTokenType(WrongTokenTypeException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("WRONG_TOKEN_TYPE", ex.getMessage()));
+    }
+
 }

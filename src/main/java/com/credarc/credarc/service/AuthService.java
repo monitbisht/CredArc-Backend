@@ -6,8 +6,8 @@ import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.BadCredentialsException;
 import com.credarc.credarc.exception.DuplicateUserException;
 import com.credarc.credarc.security.JWTService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -73,6 +73,21 @@ public class AuthService {
         response.setRefreshToken(refreshTokenService.issueRefreshToken(user));
         response.setMessage("Login successful.");
 
+        return response;
+    }
+
+    public TokenRefreshResponse refresh(TokenRefreshRequest request){
+
+        String currentRefreshToken = request.getRefreshToken();
+
+        TokenPair pair = refreshTokenService.rotateRefreshToken(currentRefreshToken);
+
+        String newAccessToken = pair.getAccessToken();
+        String newRefreshToken = pair.getRefreshToken();
+
+        TokenRefreshResponse response = new TokenRefreshResponse();
+        response.setRefreshToken(newRefreshToken);
+        response.setAccessToken(newAccessToken);
         return response;
     }
 

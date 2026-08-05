@@ -1,9 +1,6 @@
 package com.credarc.credarc.controller;
 
-import com.credarc.credarc.dto.LoginRequest;
-import com.credarc.credarc.dto.LoginResponse;
-import com.credarc.credarc.dto.SignupRequest;
-import com.credarc.credarc.dto.SignupResponse;
+import com.credarc.credarc.dto.*;
 import com.credarc.credarc.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -28,5 +25,10 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest){
         return authService.login(loginRequest);
+    }
+
+    @PostMapping("/refresh")
+    public TokenRefreshResponse refresh(@Valid @RequestBody TokenRefreshRequest tokenRefreshRequest){
+        return authService.refresh(tokenRefreshRequest);
     }
 }

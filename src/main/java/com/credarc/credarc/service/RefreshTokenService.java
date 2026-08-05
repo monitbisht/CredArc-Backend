@@ -1,10 +1,14 @@
 package com.credarc.credarc.service;
 
+import com.credarc.credarc.dto.TokenPair;
 import com.credarc.credarc.entity.RefreshToken;
 import com.credarc.credarc.entity.User;
+import com.credarc.credarc.exception.*;
 import com.credarc.credarc.repository.RefreshTokenRepository;
 import com.credarc.credarc.security.JWTService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -18,7 +22,7 @@ public class RefreshTokenService {
     private final JWTService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public RefreshTokenService(JWTService jwtService, PasswordService passwordService, RefreshTokenRepository refreshTokenRepository) {
+    public RefreshTokenService(JWTService jwtService, RefreshTokenRepository refreshTokenRepository) {
         this.jwtService = jwtService;
         this.refreshTokenRepository = refreshTokenRepository;
     }
@@ -38,7 +42,44 @@ public class RefreshTokenService {
        return refreshToken;
     }
 
+    @Transactional(noRollbackFor = TokenReuseDetectedException.class)
+    public TokenPair rotateRefreshToken(String currentRefreshToken) {
+        String tokenType;
+        try {
+            tokenType = jwtService.extractTokenType(currentRefreshToken);
+        } catch (ExpiredJwtException e) {
+            throw new TokenExpiredException("Refresh token expired.");
+        }
 
+        if (!"refresh".equalsIgnoreCase(tokenType)) {
+            throw new WrongTokenTypeException("Provided token is not a refresh token.");
+        }
+
+        String currentHashedToken = hashToken(currentRefreshToken);
+        RefreshToken storedRefreshToken = refreshTokenRepository.findByTokenHash(currentHashedToken).
+                                            orElseThrow(()-> new TokenNotFoundException("Refresh token not found."));
+
+        if(storedRefreshToken.isRevoked()) {
+            refreshTokenRepository.revokeAllActiveForUser(storedRefreshToken.getUser());
+            throw new TokenReuseDetectedException("Refresh token reuse detected. All sessions revoked.");
+        }
+
+        if(checkTokenExpiry(storedRefreshToken.getExpiresAt())) {
+            throw new TokenExpiredException("Refresh token expired.");
+        }
+
+        storedRefreshToken.setRevoked(true);
+        refreshTokenRepository.save(storedRefreshToken);
+
+        String newRefreshToken = issueRefreshToken(storedRefreshToken.getUser());
+        String newAccessToken = jwtService.generateAccessToken(storedRefreshToken.getUser());
+
+        TokenPair tokenPair = new TokenPair();
+        tokenPair.setRefreshToken(newRefreshToken);
+        tokenPair.setAccessToken(newAccessToken);
+        return tokenPair;
+
+    }
 
 
     /** Helper Methods **/
@@ -55,6 +96,11 @@ public class RefreshTokenService {
         } catch (NoSuchAlgorithmException e){
             throw new IllegalStateException("SHA-256 algorithm not found",e);
         }
+
+    }
+
+    private boolean checkTokenExpiry(Instant expiry){
+        return expiry.isBefore(Instant.now());
     }
 
 
