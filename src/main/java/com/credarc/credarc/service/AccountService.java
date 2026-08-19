@@ -8,6 +8,7 @@ import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.repository.AccountRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -76,6 +77,7 @@ public class AccountService {
     }
 
 
+    @Cacheable(value = "userAccounts" , key = "#userId")
     public List<AccountResponse> getAllAccounts(UUID userId) {
         User user = userService.getUserByUserId(userId);
         List<Account> accounts = accountRepository.findAllByUser(user);
