@@ -7,8 +7,10 @@ import com.credarc.credarc.entity.Transaction;
 import com.credarc.credarc.entity.TransactionType;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.exception.InsufficientBalanceException;
+import com.credarc.credarc.redis.CacheEvictionService;
 import com.credarc.credarc.repository.AccountRepository;
 import com.credarc.credarc.repository.TransactionRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +26,13 @@ public class TransactionService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
+    private final CacheEvictionService cacheEvictionService;
 
-    public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, AccountService accountService) {
+    public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, AccountService accountService, CacheEvictionService cacheEvictionService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.accountService = accountService;
+        this.cacheEvictionService = cacheEvictionService;
     }
 
     @Transactional
@@ -68,6 +72,8 @@ public class TransactionService {
         transactionResponse.setTimestamp(savedTransaction.getCreatedAt());
         transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
 
+        cacheEvictionService.evictAccountDetailsCache(account.getUser().getUserId());
+
         return transactionResponse;
     }
 
@@ -101,6 +107,8 @@ public class TransactionService {
         transactionResponse.setType(savedTransaction.getType());
         transactionResponse.setTimestamp(savedTransaction.getCreatedAt());
         transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
+
+        cacheEvictionService.evictAccountDetailsCache(account.getUser().getUserId());
 
         return transactionResponse;
     }
@@ -164,6 +172,9 @@ public class TransactionService {
         transactionResponse.setType(TransactionType.TRANSFER);
         transactionResponse.setTimestamp(savedTransaction.getCreatedAt());
         transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
+
+        cacheEvictionService.evictAccountDetailsCache(fromAccount.getUser().getUserId());
+        cacheEvictionService.evictAccountDetailsCache(toAccount.getUser().getUserId());
 
         return transactionResponse;
     }
