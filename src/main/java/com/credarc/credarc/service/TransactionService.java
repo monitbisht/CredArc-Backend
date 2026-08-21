@@ -28,16 +28,21 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final CacheEvictionService cacheEvictionService;
+    private  final RateLimiterService rateLimiterService;
 
-    public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, AccountService accountService, CacheEvictionService cacheEvictionService) {
+    public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, AccountService accountService, CacheEvictionService cacheEvictionService, RateLimiterService rateLimiterService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.accountService = accountService;
         this.cacheEvictionService = cacheEvictionService;
+        this.rateLimiterService = rateLimiterService;
     }
 
     @Transactional
     public TransactionResponse debit(UUID accountId, BigDecimal amount, UUID requestingUserId) {
+
+        rateLimiterService.checkRateLimit("ratelimit:transaction:userId:" + requestingUserId, 25);
+
         accountService.verifyOwnership(accountId, requestingUserId);
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0)
@@ -80,6 +85,9 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponse transfer(UUID fromId,UUID toId , BigDecimal amount , UUID requestingUserId) {
+
+        rateLimiterService.checkRateLimit("ratelimit:transaction:userId:" + requestingUserId, 25);
+
         accountService.verifyOwnership(fromId, requestingUserId);
         if (fromId.equals(toId)) {
             throw new IllegalArgumentException("Cannot transfer to same account.");
