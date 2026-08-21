@@ -5,6 +5,7 @@ import com.credarc.credarc.entity.Account;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.BadCredentialsException;
 import com.credarc.credarc.exception.DuplicateUserException;
+import com.credarc.credarc.redis.RateLimiterService;
 import com.credarc.credarc.security.JWTService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,8 @@ class AuthServiceTest {
 
     @Mock
     private UserService userService;
+    @Mock
+    private RateLimiterService rateLimiterService;
     @Mock
     private PasswordService passwordService;
     @Mock
@@ -113,7 +116,7 @@ class AuthServiceTest {
         when(userService.getUserByEmail("email@gmail.com")).thenThrow(new UsernameNotFoundException("User not found with email: notfound@x.com"));
 
         assertThrows(UsernameNotFoundException.class,
-                () -> authService.login(loginRequest));
+                () -> authService.login(loginRequest,"127.0.0.1"));
 
         verify(passwordService, never()).matchPassword(any(), any());
     }
@@ -133,7 +136,7 @@ class AuthServiceTest {
         when(passwordService.matchPassword("wrongPassword", "correctHashedPassword")).thenReturn(false);
 
         assertThrows(BadCredentialsException.class,
-                () -> authService.login(loginRequest));
+                () -> authService.login(loginRequest,"127.0.0.1"));
 
         verify(jwtService, never()).generateAccessToken(any());
     }
@@ -157,7 +160,7 @@ class AuthServiceTest {
         when(accountService.getAllAccountSummaries(mockUser)).thenReturn(mockAccounts);
         when(accountService.defaultAccount(mockUser)).thenReturn(new Account());
 
-        LoginResponse response = authService.login(loginRequest);
+        LoginResponse response = authService.login(loginRequest,"127.0.0.1" );
 
         assertNotNull(response);
         assertEquals(mockUser.getName(), response.getUserName());
