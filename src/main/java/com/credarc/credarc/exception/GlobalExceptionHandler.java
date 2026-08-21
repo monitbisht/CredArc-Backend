@@ -143,4 +143,10 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("WRONG_TOKEN_TYPE", ex.getMessage()));
     }
 
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimitExceeded(RateLimitExceededException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(new ErrorResponse("RATE_LIMIT_EXCEEDED", ex.getMessage()));
+    }
+
 }

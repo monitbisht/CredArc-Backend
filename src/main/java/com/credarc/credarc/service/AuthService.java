@@ -5,11 +5,9 @@ import com.credarc.credarc.entity.Account;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.BadCredentialsException;
 import com.credarc.credarc.exception.DuplicateUserException;
+import com.credarc.credarc.redis.RateLimiterService;
 import com.credarc.credarc.security.JWTService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,13 +20,15 @@ public class AuthService {
     private final AccountService accountService;
     private final JWTService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final RateLimiterService  rateLimiterService;
 
-    public AuthService(UserService userService, PasswordService passwordService, AccountService accountService, JWTService jwtService, RefreshTokenService refreshTokenService) {
+    public AuthService(UserService userService, PasswordService passwordService, AccountService accountService, JWTService jwtService, RefreshTokenService refreshTokenService, RateLimiterService rateLimiterService) {
         this.userService = userService;
         this.passwordService = passwordService;
         this.accountService = accountService;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.rateLimiterService = rateLimiterService;
     }
 
     public SignupResponse register(SignupRequest request){
@@ -54,10 +54,11 @@ public class AuthService {
 
     }
 
-    @Transactional
     public LoginResponse login(LoginRequest request){
+        String email = request.getEmail().trim();
+        rateLimiterService.checkLoginRateLimit("ratelimit:login:email:" + email,5);
 
-        User user = userService.getUserByEmail(request.getEmail());
+        User user = userService.getUserByEmail(email);
 
         if(! passwordService.matchPassword(request.getPassword(),user.getPassword())){
             throw new BadCredentialsException("Wrong email or password.");
