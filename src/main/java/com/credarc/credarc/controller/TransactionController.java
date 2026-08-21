@@ -3,6 +3,7 @@ package com.credarc.credarc.controller;
 import com.credarc.credarc.dto.*;
 import com.credarc.credarc.security.CustomUserDetails;
 import com.credarc.credarc.service.TransactionService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,12 +39,6 @@ public class TransactionController {
         );
     }
 
-    @PostMapping("/credit")
-    public TransactionResponse credit( @Valid @RequestBody CreditRequest creditRequest){
-
-        return transactionService.credit(creditRequest.getAccountId(), creditRequest.getAmount());
-    }
-
     @PostMapping("/transfer")
     public TransactionResponse transfer(@Valid @RequestBody TransferRequest transferRequest) {
         return transactionService.transfer(
@@ -61,5 +56,18 @@ public class TransactionController {
 
         return transactionService.getTransactionHistory( accountId, page , size , getRequestingUserId() );
 
+    }
+
+    @Operation(
+            summary = "Credit an account (dev/admin use)",
+            description = "Adds funds to any account by ID. Intended for seeding test data " +
+                    "or admin-initiated deposits — not a self-service user action. " +
+                    "No ownership check is enforced; access control (RBAC) is planned " +
+                    "but not yet implemented."
+    )
+    @PostMapping("/credit")
+    public TransactionResponse credit( @Valid @RequestBody CreditRequest creditRequest){
+
+        return transactionService.credit(creditRequest.getAccountId(), creditRequest.getAmount());
     }
 }

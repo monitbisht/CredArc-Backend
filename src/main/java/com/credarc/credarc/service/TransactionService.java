@@ -8,6 +8,7 @@ import com.credarc.credarc.entity.TransactionType;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.exception.InsufficientBalanceException;
 import com.credarc.credarc.redis.CacheEvictionService;
+import com.credarc.credarc.redis.RateLimiterService;
 import com.credarc.credarc.repository.AccountRepository;
 import com.credarc.credarc.repository.TransactionRepository;
 import org.springframework.cache.annotation.CacheEvict;
@@ -78,44 +79,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponse credit(UUID accountId, BigDecimal amount){
-
-        if(amount == null || amount.compareTo(BigDecimal.ZERO) <=0){
-            throw new IllegalArgumentException("Amount must be positive.");
-        }
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(()->
-                    new AccountNotFoundException(accountId));
-
-        TransactionResponse transactionResponse = new TransactionResponse();
-
-
-        account.setBalance(account.getBalance().add(amount));
-
-        Transaction tx = new Transaction();
-        tx.setAccount(account);
-        tx.setType(TransactionType.CREDIT);
-        tx.setAmount(amount);
-        tx.setDescription("Credit operation");
-
-        Transaction savedTransaction = transactionRepository.save(tx);
-
-        transactionResponse.setTransactionId(savedTransaction.getTransactionId());
-        transactionResponse.setToAccountId(savedTransaction.getAccount().getAccountId());
-        transactionResponse.setAmount(savedTransaction.getAmount());
-        transactionResponse.setType(savedTransaction.getType());
-        transactionResponse.setTimestamp(savedTransaction.getCreatedAt());
-        transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
-
-        cacheEvictionService.evictAccountDetailsCache(account.getUser().getUserId());
-
-        return transactionResponse;
-    }
-
-    @Transactional
     public TransactionResponse transfer(UUID fromId,UUID toId , BigDecimal amount , UUID requestingUserId) {
-
         accountService.verifyOwnership(fromId, requestingUserId);
         if (fromId.equals(toId)) {
             throw new IllegalArgumentException("Cannot transfer to same account.");
@@ -195,5 +159,48 @@ public class TransactionService {
            transactionResponse.setTimestamp(tx.getCreatedAt());
             return transactionResponse;
         });
+    }
+
+    /**
+     * Credits funds to an account. Currently unrestricted (no ownership check) —
+     * intended as an admin/system-initiated action (e.g. external deposit) or
+     * dev/testing utility to seed account balances. Not exposed to regular
+     * users in a production context; requires RBAC before real deployment.
+     */
+
+    @Transactional
+    public TransactionResponse credit(UUID accountId, BigDecimal amount){
+
+        if(amount == null || amount.compareTo(BigDecimal.ZERO) <=0){
+            throw new IllegalArgumentException("Amount must be positive.");
+        }
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(()->
+                        new AccountNotFoundException(accountId));
+
+        TransactionResponse transactionResponse = new TransactionResponse();
+
+
+        account.setBalance(account.getBalance().add(amount));
+
+        Transaction tx = new Transaction();
+        tx.setAccount(account);
+        tx.setType(TransactionType.CREDIT);
+        tx.setAmount(amount);
+        tx.setDescription("Credit operation");
+
+        Transaction savedTransaction = transactionRepository.save(tx);
+
+        transactionResponse.setTransactionId(savedTransaction.getTransactionId());
+        transactionResponse.setToAccountId(savedTransaction.getAccount().getAccountId());
+        transactionResponse.setAmount(savedTransaction.getAmount());
+        transactionResponse.setType(savedTransaction.getType());
+        transactionResponse.setTimestamp(savedTransaction.getCreatedAt());
+        transactionResponse.setUpdatedBalance(savedTransaction.getAccount().getBalance());
+
+        cacheEvictionService.evictAccountDetailsCache(account.getUser().getUserId());
+
+        return transactionResponse;
     }
 }
