@@ -7,6 +7,8 @@ import com.credarc.credarc.exception.BadCredentialsException;
 import com.credarc.credarc.exception.DuplicateUserException;
 import com.credarc.credarc.redis.RateLimiterService;
 import com.credarc.credarc.security.JWTService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -14,6 +16,8 @@ import java.util.List;
 
 @Service
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserService userService;
     private final PasswordService passwordService;
@@ -60,7 +64,8 @@ public class AuthService {
 
         User user = userService.getUserByEmail(email);
 
-        if(! passwordService.matchPassword(request.getPassword(),user.getPassword())){
+        if(!passwordService.matchPassword(request.getPassword(), user.getPassword())){
+            log.warn("Login failed: wrong password for email: {}", email);
             throw new BadCredentialsException("Wrong email or password.");
         }
 
