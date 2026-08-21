@@ -5,6 +5,8 @@ package com.credarc.credarc.service;
 import com.credarc.credarc.dto.SignupRequest;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import java.util.UUID;
 
 @Service
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
 
@@ -44,8 +48,10 @@ public class UserService {
     public User getUserByEmail(String email){
 
         return userRepository.findByEmail(email)
-                .orElseThrow(()->
-                        new UsernameNotFoundException("User not found with email: " + email));
+                .orElseThrow(()->{
+                        log.warn("Login failed: no user found for email: {}", email);
+                        return new UsernameNotFoundException("User not found with email: " + email);
+    });
     }
 
     public User getUserByUserId(UUID userID){
