@@ -2,6 +2,8 @@ package com.credarc.credarc.controller;
 
 import com.credarc.credarc.dto.*;
 import com.credarc.credarc.service.AuthService;
+import com.credarc.credarc.utils.IpUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +25,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest){
-        return authService.login(loginRequest);
+    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request){
+        String clientIp = IpUtils.extractClientIp(request);
+        return authService.login(loginRequest,clientIp);
     }
 
     @PostMapping("/refresh")

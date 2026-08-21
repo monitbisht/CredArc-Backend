@@ -54,7 +54,7 @@ public class AuthService {
 
     }
 
-    public LoginResponse login(LoginRequest request){
+    public LoginResponse login(LoginRequest request,String clientIp){
         String email = request.getEmail().trim();
         rateLimiterService.checkLoginRateLimit("ratelimit:login:email:" + email,5);
 
