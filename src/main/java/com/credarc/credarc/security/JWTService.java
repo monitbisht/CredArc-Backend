@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.UUID;
 
 @Service
 public class JWTService {
@@ -29,6 +30,7 @@ public class JWTService {
                 .claims(extraClaims)
                 .subject(user.getUserId().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
+                .id(UUID.randomUUID().toString())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) //Access token is valid for 15 minutes.
                 .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
@@ -43,6 +45,7 @@ public class JWTService {
                 .claims(extraClaims)
                 .subject(user.getUserId().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
+                .id(UUID.randomUUID().toString())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) //Refresh token is valid for 7 days.
                 .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
