@@ -60,11 +60,11 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request,String clientIp){
 
-        rateLimiterService.checkLoginRateLimit("ratelimit:login:ip:" + clientIp,20);
+        rateLimiterService.checkRateLimit("ratelimit:login:ip:" + clientIp,20);
 
         String email = request.getEmail().trim();
 
-        rateLimiterService.checkLoginRateLimit("ratelimit:login:email:" + email,5);
+        rateLimiterService.checkRateLimit("ratelimit:login:email:" + email,5);
 
         User user = userService.getUserByEmail(email);
 

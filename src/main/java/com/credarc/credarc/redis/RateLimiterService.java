@@ -16,7 +16,7 @@ public class RateLimiterService {
         this.redisTemplate = redisTemplate;
     }
 
-    public void checkLoginRateLimit(String key, int maxAttempts) {
+    public void checkRateLimit(String key, int maxAttempts) {
         Long count = redisTemplate.opsForValue().increment(key, 1);
         if (count != null && count == 1) {
             redisTemplate.expire(key, Duration.ofMinutes(1));
