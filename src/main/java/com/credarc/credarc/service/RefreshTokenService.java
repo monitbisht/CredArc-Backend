@@ -56,20 +56,19 @@ public class RefreshTokenService {
         }
 
         String currentHashedToken = hashToken(currentRefreshToken);
-        RefreshToken storedRefreshToken = refreshTokenRepository.findByTokenHash(currentHashedToken).
-                                            orElseThrow(()-> new TokenNotFoundException("Refresh token not found."));
+        RefreshToken storedRefreshToken = refreshTokenRepository.findByTokenHash(currentHashedToken)
+                .orElseThrow(() -> new TokenNotFoundException("Refresh token not found."));
 
-        if(storedRefreshToken.isRevoked()) {
-            refreshTokenRepository.revokeAllActiveForUser(storedRefreshToken.getUser());
-            throw new TokenReuseDetectedException("Refresh token reuse detected. All sessions revoked.");
-        }
-
-        if(checkTokenExpiry(storedRefreshToken.getExpiresAt())) {
+        if (checkTokenExpiry(storedRefreshToken.getExpiresAt())) {
             throw new TokenExpiredException("Refresh token expired.");
         }
 
-        storedRefreshToken.setRevoked(true);
-        refreshTokenRepository.save(storedRefreshToken);
+        int rowsUpdated = refreshTokenRepository.revokeIfActive(currentHashedToken);
+
+        if (rowsUpdated == 0) {
+            refreshTokenRepository.revokeAllActiveForUser(storedRefreshToken.getUser());
+            throw new TokenReuseDetectedException("Refresh token reuse detected. All sessions revoked.");
+        }
 
         String newRefreshToken = issueRefreshToken(storedRefreshToken.getUser());
         String newAccessToken = jwtService.generateAccessToken(storedRefreshToken.getUser());
@@ -78,7 +77,6 @@ public class RefreshTokenService {
         tokenPair.setRefreshToken(newRefreshToken);
         tokenPair.setAccessToken(newAccessToken);
         return tokenPair;
-
     }
 
     public void revokeToken(String refreshToken) {
