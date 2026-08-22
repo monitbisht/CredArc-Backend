@@ -16,6 +16,10 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
 
   app:
     build: .
@@ -27,13 +31,15 @@ services:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
       mysql:
-          condition: service_healthy
-
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - app_logs:/app/logs
 
 
 volumes:
   mysql_data:
     name: credarc_mysql_data
-
-
-
+  app_logs:
+    name: credarc_app_logs
