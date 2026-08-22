@@ -16,7 +16,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("CredArc Banking API")
-                        .version("2.0")
+                        .version("2.1.0")
                         .description("A backend banking system featuring JWT authentication with refresh token rotation, atomic transfers, and containerized deployment."))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Token"))
                 .components(new Components()
