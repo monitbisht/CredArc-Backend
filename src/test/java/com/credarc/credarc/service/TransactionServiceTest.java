@@ -8,6 +8,8 @@ import com.credarc.credarc.entity.TransactionType;
 import com.credarc.credarc.entity.User;
 import com.credarc.credarc.exception.AccountNotFoundException;
 import com.credarc.credarc.exception.InsufficientBalanceException;
+import com.credarc.credarc.redis.CacheEvictionService;
+import com.credarc.credarc.redis.RateLimiterService;
 import com.credarc.credarc.repository.AccountRepository;
 import com.credarc.credarc.repository.TransactionRepository;
 
@@ -44,7 +46,11 @@ class TransactionServiceTest {
     @Mock
     AccountService accountService;
 
+    @Mock
+    private RateLimiterService rateLimiterService;
 
+    @Mock
+    private CacheEvictionService cacheEvictionService;
     @Mock
     private AccountRepository accountRepository;
     @Mock
