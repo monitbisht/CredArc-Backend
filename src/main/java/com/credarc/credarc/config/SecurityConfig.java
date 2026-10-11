@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authEntryPoint)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/error", "/swagger-ui/**", "/v3/api-docs/**" ,"/health").permitAll()
+                        .requestMatchers("/auth/**", "/error", "/swagger-ui/**", "/v3/api-docs/**" ,"/health", "/actuator/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 // Add JWT filter before Spring's default username/password filter
